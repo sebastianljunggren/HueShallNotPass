@@ -12,7 +12,6 @@ const int progressLeds[] = {7, 6, 5, 4, 3};
 const int potPin = A3;
 const int colorLedCount = 5;
 const int colorLeds[] = {8, 9, 10, 11, 12};
-const String password = "mellon";
 
 boolean locked = false;
 int potValue = 0;
@@ -32,7 +31,6 @@ void setup() {
     }
     pinMode(potPin, INPUT);
     Serial.begin(9600);
-    Keyboard.begin();
 }
 
 // the loop routine runs over and over again forever:
@@ -52,14 +50,8 @@ void loop() {
     } else if (!locked && potValue == colorLedCount) {
         // User wants to lock computer
         activeColor = -1;
-        Serial.println("Locking computer...");
         locked = true;
-        Keyboard.press(KEY_LEFT_CTRL);
-        Keyboard.press(KEY_LEFT_ALT);
-        Keyboard.press('l');
-        delay(1000);
-
-        Keyboard.releaseAll();
+        Serial.print('l');
     }
     handleLeds();
     delay(100);
@@ -82,8 +74,6 @@ void tryToUnlock() {
         enteredCode[progress] = activeColor;
         progress++;
         activeSince = millis();
-        Serial.print("Entered ");
-        Serial.println(potValue);
         // Check if full code has been entered.
         if (progress == progressLedCount) {
             boolean correctCode = true;
@@ -93,13 +83,9 @@ void tryToUnlock() {
                 }    
             }
             if (correctCode) {
-                Serial.println("Correct code entered, sending keypresses...");
                 locked = false;
-                Keyboard.write(KEY_LEFT_ARROW);
-                delay(100);
-                Keyboard.println(password);
+                Serial.print('u');
             } else {
-                Serial.println("Incorrect code entered, starting over...");
                 activeSince = millis();
                 progress = 0;
                 for(int i=0; i<progressLedCount; i++) {
