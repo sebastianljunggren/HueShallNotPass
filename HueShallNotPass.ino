@@ -6,6 +6,8 @@
   This code is not safe since it requires storage of passwords in plaintext.
  */
 
+#include <Bounce.h>
+
 // The amount of LEDs for showing unlock progress.
 const int progressLedCount = 5;
 const unsigned char colors[5][3] = {
@@ -18,7 +20,9 @@ const unsigned char colors[5][3] = {
 const unsigned char black[] = {0, 0, 0};
 const unsigned char white[] = {127, 127, 127};
 
-const int potPin = A3;
+const byte potPin = A3;
+const byte buttonPin = 9;
+Bounce button = Bounce(buttonPin, 5);
 const int colorLedCount = 5;
 const int colorLeds[] = {3, 4, 5, 6, 7};
 
@@ -26,7 +30,6 @@ boolean locked = false;
 int potValue = 0;
 int progress = 0;
 int activeColor = 0;
-unsigned long activeSince = 0;
 int code[] = {0, 1, 2, 0, 4};
 int enteredCode[] = {-1,-1,-1,-1,-1};
 boolean litLeds[] = {true, true, true, true, true};
@@ -76,6 +79,7 @@ void setup() {
         pinMode(colorLeds[i], OUTPUT);
     }
     pinMode(potPin, INPUT);
+    pinMode(buttonPin, INPUT);
 }
 
 // the loop routine runs over and over again forever:
@@ -89,6 +93,9 @@ void loop() {
             locked = false;
         }
     }
+
+    // Update button
+    button.update();
 
     // Check potentiometer
     potValue = map(analogRead(potPin), 0, 1023, 0, colorLedCount);
@@ -136,11 +143,11 @@ void handleLeds() {
 }
 
 void tryToUnlock() {
-    if (potValue == activeColor && (millis() - activeSince) >= 1800 && progress < progressLedCount) {
+    boolean released = button.risingEdge();
+    if (potValue == activeColor && progress < progressLedCount && released) {
         litLeds[progress] = true;
         enteredCode[progress] = activeColor;
         progress++;
-        activeSince = millis();
         // Check if full code has been entered.
         if (progress == progressLedCount) {
             boolean correctCode = true;
@@ -153,7 +160,6 @@ void tryToUnlock() {
                 locked = false;
                 Serial.print('u');
             } else {
-                activeSince = millis();
                 progress = 0;
                 for(int i=0; i<progressLedCount; i++) {
                     enteredCode[i] = -1;
@@ -162,7 +168,6 @@ void tryToUnlock() {
 
         }
     } else if (activeColor != potValue) {
-        activeSince = millis();
         activeColor = potValue;
     }
 }
