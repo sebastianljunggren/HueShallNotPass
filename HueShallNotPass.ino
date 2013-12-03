@@ -40,7 +40,6 @@ int activeColor = 0;
 // The code is red, green, blue, red, purple.
 int code[] = {0, 1, 2, 0, 4};
 int enteredCode[] = {-1,-1,-1,-1,-1};
-boolean litLeds[] = {true, true, true, true, true};
 
 // Some variables needed for ShiftPWM.
 const int ShiftPWM_latchPin=8;
@@ -76,6 +75,7 @@ void loop() {
         int status = Serial.read();
         if (status == 'l') {
             locked = true;
+            resetCode();
         } else {
             locked = false;
         }
@@ -92,12 +92,7 @@ void loop() {
         tryToUnlock();
     } else if (locked && potValue == colorLedCount) {
         // Wait for the user to start trying to unlock
-        // Ensure no leds are lit and that progress is zero
-        progress = 0;
-        for (int i=0; i < progressLedCount; i++) {
-            litLeds[i] = false;
-        }
-        delay(10);
+        resetCode();
     } else if (!locked && potValue == colorLedCount) {
         // User wants to lock computer
         activeColor = -1;
@@ -105,7 +100,6 @@ void loop() {
         Serial.print('l');
     }
     handleLeds();
-    delay(100);
 }
 
 void handleLeds() {
@@ -136,9 +130,8 @@ void handleLeds() {
 void tryToUnlock() {
     activeColor = potValue;
 
-    // Only do something if button has been release
+    // Only do something if button has been released.
     if (buttonReleased) {
-        litLeds[progress] = true;
         enteredCode[progress] = activeColor;
         progress++;
         // Check if full code has been entered.
@@ -155,12 +148,16 @@ void tryToUnlock() {
                 Serial.print('u');
             } else {
                 // Start over
-                progress = 0;
-                for(int i=0; i<progressLedCount; i++) {
-                    enteredCode[i] = -1;
-                }
+                resetCode();
             }
 
         }
+    }
+}
+
+void resetCode() {
+    progress = 0;
+    for(int i=0; i<progressLedCount; i++) {
+        enteredCode[i] = -1;
     }
 }
