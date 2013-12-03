@@ -42,30 +42,14 @@ int code[] = {0, 1, 2, 0, 4};
 int enteredCode[] = {-1,-1,-1,-1,-1};
 boolean litLeds[] = {true, true, true, true, true};
 
-// You can choose the latch pin yourself.
+// Some variables needed for ShiftPWM.
 const int ShiftPWM_latchPin=8;
-
-// ** uncomment this part to NOT use the SPI port and change the pin numbers. This is 2.5x slower **
 #define SHIFTPWM_NOSPI
 const int ShiftPWM_dataPin = 11;
 const int ShiftPWM_clockPin = 13;
-
-
-// If your LED's turn on if the pin is low, set this to true, otherwise set it to false.
 const bool ShiftPWM_invertOutputs = true;
-
-// You can enable the option below to shift the PWM phase of each shift register by 8 compared to the previous.
-// This will slightly increase the interrupt load, but will prevent all PWM signals from becoming high at the same time.
-// This will be a bit easier on your power supply, because the current peaks are distributed.
 const bool ShiftPWM_balanceLoad = false;
-
-#include <ShiftPWM.h>   // include ShiftPWM.h after setting the pins!
-
-// Here you set the number of brightness levels, the update frequency and the number of shift registers.
-// These values affect the load of ShiftPWM.
-// Choose them wisely and use the PrintInterruptLoad() function to verify your load.
-// There is a calculator on my website to estimate the load.
-
+#include <ShiftPWM.h>
 unsigned char maxBrightness = 255;
 unsigned char pwmFrequency = 75;
 int numRegisters = 2;
@@ -77,10 +61,6 @@ void setup() {
 
     // Sets the number of 8-bit registers that are used.
     ShiftPWM.SetAmountOfRegisters(numRegisters);
-
-    // SetPinGrouping allows flexibility in LED setup. 
-    // If your LED's are connected like this: RRRRGGGGBBBBRRRRGGGGBBBB, use SetPinGrouping(4).
-    ShiftPWM.SetPinGrouping(1); //This is the default, but I added here to demonstrate how to use the funtion
 
     ShiftPWM.Start(pwmFrequency,maxBrightness);      
     for (int i = 0; i < colorLedCount; i++) {
@@ -155,7 +135,7 @@ void handleLeds() {
 
 void tryToUnlock() {
     activeColor = potValue;
-    
+
     // Only do something if button has been release
     if (buttonReleased) {
         litLeds[progress] = true;
