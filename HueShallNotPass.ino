@@ -16,7 +16,7 @@ const unsigned char colors[5][3] = {
     {255, 0, 255}
 };
 const unsigned char black[] = {0, 0, 0};
-const unsigned char white[] = {255, 255, 255};
+const unsigned char white[] = {127, 127, 127};
 
 const int potPin = A3;
 const int colorLedCount = 5;
@@ -80,6 +80,17 @@ void setup() {
 
 // the loop routine runs over and over again forever:
 void loop() {
+    // Check if computer has changed status
+    if( Serial.available() > 0) {
+        int status = Serial.read();
+        if (status == 'l') {
+            locked = true;
+        } else {
+            locked = false;
+        }
+    }
+
+    // Check potentiometer
     potValue = map(analogRead(potPin), 0, 1023, 0, colorLedCount);
     if(locked && potValue != colorLedCount) {
         // User is trying to unlock with potentiometer
