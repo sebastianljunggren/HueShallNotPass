@@ -10,26 +10,34 @@
 
 // The amount of LEDs for showing unlock progress.
 const int progressLedCount = 5;
+// The colors ordered from right to left.
 const unsigned char colors[5][3] = {
-    {255, 0, 0},
-    {0, 100, 0},
-    {0, 0, 255},
-    {255, 20, 0},
-    {255, 0, 255}
+    {255, 0, 0},  // Red
+    {0, 100, 0},  // Green
+    {0, 0, 255},  // Blue
+    {255, 20, 0}, // Orange
+    {255, 0, 255} // Purple
 };
 const unsigned char black[] = {0, 0, 0};
 const unsigned char white[] = {127, 127, 127};
 
-const byte potPin = A3;
-const byte buttonPin = 9;
-Bounce button = Bounce(buttonPin, 5);
+// Pins for showing which color is active
 const int colorLedCount = 5;
 const int colorLeds[] = {3, 4, 5, 6, 7};
+
+const byte potPin = A3;
+
+// The button is debounced using the Bounce-library.
+const byte buttonPin = 9;
+Bounce button = Bounce(buttonPin, 5);
+boolean buttonReleased = false;
 
 boolean locked = false;
 int potValue = 0;
 int progress = 0;
 int activeColor = 0;
+
+// The code is red, green, blue, red, purple.
 int code[] = {0, 1, 2, 0, 4};
 int enteredCode[] = {-1,-1,-1,-1,-1};
 boolean litLeds[] = {true, true, true, true, true};
@@ -82,7 +90,6 @@ void setup() {
     pinMode(buttonPin, INPUT);
 }
 
-// the loop routine runs over and over again forever:
 void loop() {
     // Check if computer has changed status
     if( Serial.available() > 0) {
@@ -94,8 +101,9 @@ void loop() {
         }
     }
 
-    // Update button
+    // Se if the button has been released
     button.update();
+    buttonReleased = button.risingEdge();
 
     // Check potentiometer
     potValue = map(analogRead(potPin), 0, 1023, 0, colorLedCount);
@@ -121,6 +129,7 @@ void loop() {
 }
 
 void handleLeds() {
+    // The RGB LEDs.
     for(int i=0; i < progressLedCount; i++) {
         if (locked && potValue < colorLedCount) {
             if (i < progress) {
@@ -136,6 +145,8 @@ void handleLeds() {
             ShiftPWM.SetRGB(i, white[0], white[1], white[2]);
         }   
     }
+
+    // The color LEDs.
     for(int i=0; i<colorLedCount; i++){
         digitalWrite(colorLeds[i], potValue == i); 
                 
@@ -143,8 +154,10 @@ void handleLeds() {
 }
 
 void tryToUnlock() {
-    boolean released = button.risingEdge();
-    if (potValue == activeColor && progress < progressLedCount && released) {
+    activeColor = potValue;
+    
+    // Only do something if button has been release
+    if (buttonReleased) {
         litLeds[progress] = true;
         enteredCode[progress] = activeColor;
         progress++;
@@ -157,9 +170,11 @@ void tryToUnlock() {
                 }    
             }
             if (correctCode) {
+                // Unlock the computer
                 locked = false;
                 Serial.print('u');
             } else {
+                // Start over
                 progress = 0;
                 for(int i=0; i<progressLedCount; i++) {
                     enteredCode[i] = -1;
@@ -167,7 +182,5 @@ void tryToUnlock() {
             }
 
         }
-    } else if (activeColor != potValue) {
-        activeColor = potValue;
     }
 }
