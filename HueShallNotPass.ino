@@ -26,6 +26,7 @@ const int colorLedCount = 5;
 const int colorLeds[] = {3, 4, 5, 6, 7};
 
 const byte potPin = A3;
+const int potThresholds[] = {189,333,493,645,795};
 
 // The button is debounced using the Bounce-library.
 const byte buttonPin = 9;
@@ -86,7 +87,7 @@ void loop() {
     buttonReleased = button.risingEdge();
 
     // Check potentiometer
-    potValue = map(analogRead(potPin), 0, 1023, 0, colorLedCount);
+    potValue = readPotentiometer();
     if(locked && potValue != colorLedCount) {
         // User is trying to unlock with potentiometer
         tryToUnlock();
@@ -160,4 +161,22 @@ void resetCode() {
     for(int i=0; i<progressLedCount; i++) {
         enteredCode[i] = -1;
     }
+}
+
+int readPotentiometer() {
+    int val = analogRead(potPin);
+    if (val < potThresholds[0]) {
+        return 0;
+    } else if (val < potThresholds[1]) {
+        return 1;
+    } else if (val < potThresholds[2]) {
+        return 2;
+    } else if (val < potThresholds[3]) {
+        return 3;
+    } else if (val < potThresholds[4]) {
+        return 4;
+    } else {
+        return 5;
+    }
+
 }
