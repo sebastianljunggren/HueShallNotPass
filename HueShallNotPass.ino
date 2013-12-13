@@ -34,7 +34,6 @@ Bounce button = Bounce(buttonPin, 5);
 boolean buttonReleased = false;
 
 boolean locked = false;
-int potValue = 0;
 int progress = 0;
 int activeColor = 0;
 
@@ -87,14 +86,14 @@ void loop() {
     buttonReleased = button.risingEdge();
 
     // Check potentiometer
-    potValue = readPotentiometer();
-    if(locked && potValue != colorLedCount) {
+    activeColor = readPotentiometer();
+    if(locked && activeColor != colorLedCount) {
         // User is trying to unlock with potentiometer
         tryToUnlock();
-    } else if (locked && potValue == colorLedCount && buttonReleased) {
+    } else if (locked && activeColor == colorLedCount && buttonReleased) {
         // Wait for the user to start trying to unlock
         resetCode();
-    } else if (!locked && potValue == colorLedCount && buttonReleased) {
+    } else if (!locked && activeColor == colorLedCount && buttonReleased) {
         // User wants to lock computer
         activeColor = -1;
         locked = true;
@@ -106,16 +105,18 @@ void loop() {
 void handleLeds() {
     // The RGB LEDs.
     for(int i=0; i < progressLedCount; i++) {
-        if (locked && potValue < colorLedCount) {
+        if (locked) {
             if (i < progress) {
                 ShiftPWM.SetRGB(i, white[0], white[1], white[2]);
             } else if (i == progress) {
-                ShiftPWM.SetRGB(i, colors[activeColor][0], colors[activeColor][1], colors[activeColor][2]);
+                if (activeColor < colorLedCount) {
+                    ShiftPWM.SetRGB(i, colors[activeColor][0], colors[activeColor][1], colors[activeColor][2]);
+                } else {
+                    ShiftPWM.SetRGB(i, black[0], black[1], black[2]);
+                }
             } else {
                 ShiftPWM.SetRGB(i, black[0], black[1], black[2]);
             }
-        } else if (locked && potValue == colorLedCount) {
-            ShiftPWM.SetRGB(i, black[0], black[1], black[2]);
         } else {
             ShiftPWM.SetRGB(i, white[0], white[1], white[2]);
         }   
@@ -123,14 +124,12 @@ void handleLeds() {
 
     // The color LEDs.
     for(int i=0; i<colorLedCount; i++){
-        digitalWrite(colorLeds[i], potValue == i); 
+        digitalWrite(colorLeds[i], activeColor == i); 
                 
     }  
 }
 
 void tryToUnlock() {
-    activeColor = potValue;
-
     // Only do something if button has been released.
     if (buttonReleased) {
         enteredCode[progress] = activeColor;
