@@ -169,7 +169,10 @@ void resetCode() {
 
 int readPotentiometer() {
     int val = analogRead(potPin);
-    if (abs(potVal - val) > 10) {
+    // Only update potentiometer if it has been changed enough.
+    // This minimizes the flickering when between colors.
+    if (abs(potVal - val) > 5) {
+        potVal = val;
         if (val < potThresholds[0]) {
             return 0;
         } else if (val < potThresholds[1]) {
