@@ -24,6 +24,7 @@ const unsigned char white[] = {127, 127, 127};
 // Pins for showing which color is active
 const int colorLedCount = 5;
 const int colorLeds[] = {3, 4, 5, 6, 7};
+const int lockLedPin = 2;
 
 const byte potPin = A3;
 const int potThresholds[] = {189,333,493,645,795};
@@ -36,6 +37,7 @@ boolean buttonReleased = false;
 boolean locked = false;
 int progress = 0;
 int activeColor = 0;
+int potVal = 0;
 
 // The code is purple, blue, green, purple, red.
 int code[] = {0, 1, 2, 0, 4};
@@ -126,7 +128,10 @@ void handleLeds() {
     for(int i=0; i<colorLedCount; i++){
         digitalWrite(colorLeds[i], activeColor == i); 
                 
-    }  
+    }
+
+    // The lock LED
+    digitalWrite(lockLedPin, activeColor == 5);
 }
 
 void tryToUnlock() {
@@ -164,18 +169,21 @@ void resetCode() {
 
 int readPotentiometer() {
     int val = analogRead(potPin);
-    if (val < potThresholds[0]) {
-        return 0;
-    } else if (val < potThresholds[1]) {
-        return 1;
-    } else if (val < potThresholds[2]) {
-        return 2;
-    } else if (val < potThresholds[3]) {
-        return 3;
-    } else if (val < potThresholds[4]) {
-        return 4;
+    if (abs(potVal - val) > 10) {
+        if (val < potThresholds[0]) {
+            return 0;
+        } else if (val < potThresholds[1]) {
+            return 1;
+        } else if (val < potThresholds[2]) {
+            return 2;
+        } else if (val < potThresholds[3]) {
+            return 3;
+        } else if (val < potThresholds[4]) {
+            return 4;
+        } else {
+            return 5;
+        }
     } else {
-        return 5;
+        return activeColor;
     }
-
 }
