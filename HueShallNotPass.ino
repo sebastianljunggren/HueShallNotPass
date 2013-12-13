@@ -12,11 +12,11 @@
 const int progressLedCount = 5;
 // The colors ordered from right to left.
 const unsigned char colors[5][3] = {
-    {255, 0, 0},  // Red
-    {0, 100, 0},  // Green
-    {0, 0, 255},  // Blue
-    {255, 20, 0}, // Orange
-    {255, 0, 255} // Purple
+    {255, 0, 100}, // Purple
+    {0, 0, 255},   // Blue
+    {0, 100, 0},   // Green
+    {255, 80, 0},  // Orange
+    {255, 0, 0}    // Red
 };
 const unsigned char black[] = {0, 0, 0};
 const unsigned char white[] = {127, 127, 127};
@@ -38,7 +38,7 @@ int potValue = 0;
 int progress = 0;
 int activeColor = 0;
 
-// The code is red, green, blue, red, purple.
+// The code is purple, blue, green, purple, red.
 int code[] = {0, 1, 2, 0, 4};
 int enteredCode[] = {-1,-1,-1,-1,-1};
 
@@ -91,10 +91,10 @@ void loop() {
     if(locked && potValue != colorLedCount) {
         // User is trying to unlock with potentiometer
         tryToUnlock();
-    } else if (locked && potValue == colorLedCount) {
+    } else if (locked && potValue == colorLedCount && buttonReleased) {
         // Wait for the user to start trying to unlock
         resetCode();
-    } else if (!locked && potValue == colorLedCount) {
+    } else if (!locked && potValue == colorLedCount && buttonReleased) {
         // User wants to lock computer
         activeColor = -1;
         locked = true;
