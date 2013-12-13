@@ -21,10 +21,10 @@ while True:
     if ser.inWaiting() > 0:
         message = ser.read()
         if message == 'l':
-            print 'Recieved lock signal.'
+            print 'Received lock signal.'
             screensaver_iface.Lock()
             is_locked = True
         elif message == 'u':
-            print 'Recieved unlock signal.'
+            print 'Received unlock signal.'
             screensaver_iface.SetActive(False)
             is_locked = False
