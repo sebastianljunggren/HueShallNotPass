@@ -97,7 +97,7 @@ void loop() {
         resetCode();
     } else if (!locked && activeColor == colorLedCount && buttonReleased) {
         // User wants to lock computer
-        activeColor = -1;
+        resetCode();
         locked = true;
         Serial.print('l');
     }
