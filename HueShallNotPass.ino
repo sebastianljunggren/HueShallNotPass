@@ -2,8 +2,6 @@
   Hue Shall Not Pass
 
   Unlock your computer in a safe-like way, using a potentiometer.
-
-  This code is not safe since it requires storage of passwords in plaintext.
  */
 
 #include <Bounce.h>
